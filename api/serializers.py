@@ -108,7 +108,8 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
         else:
             user = self.context['request'].user
 
-        expand = self.context['request'].query_params.getlist('expand')
+        if self.context and 'request' in self.context:
+            expand = self.context['request'].query_params.getlist('expand')
 
         classifier_input = {
             'user': user, # force loggedin user id
@@ -142,7 +143,7 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
             classifier.task_id = task['id']
             classifier.save()
 
-            if 'task' in expand:
+            if expand and 'task' in expand:
                 output['task'] = task
 
         return classifier
@@ -157,14 +158,15 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
     def to_representation(self, obj):
         output = serializers.Serializer.to_representation(self, obj)
 
-        expand = self.context['request'].query_params.getlist('expand')
+        if self.context and 'request' in self.context:
+            expand = self.context['request'].query_params.getlist('expand')
 
-        if 'task' in expand:
+        if expand and 'task' in expand:
             task_service = TaskServiceClient(settings.TASK_SERVICE_BASE_URL,
                                              settings.AUTH_TOKEN)
             output['task'] = task_service.get(output['task_id'])
 
-        if 'user' in expand and not isinstance(output['user'], dict):
+        if expand and 'user' in expand and not isinstance(output['user'], dict):
             output['user'] = UserSerializer(User.objects.get(id=output['user']), context=self.context).data
 
         return output
