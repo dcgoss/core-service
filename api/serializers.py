@@ -108,6 +108,8 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
         else:
             user = self.context['request'].user
 
+        expand = self.context['request'].query_params.getlist('expand')
+
         classifier_input = {
             'user': user, # force loggedin user id
         }
@@ -140,6 +142,9 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
             classifier.task_id = task['id']
             classifier.save()
 
+            if 'task' in expand:
+                output['task'] = task
+
         return classifier
 
     def update(self, instance, validated_data):
@@ -148,14 +153,6 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
         instance.results = validated_data.get('results', instance.results)
         instance.save()
         return instance
-
-    def get_expands(self):
-        raw_expand = self.context['request'].query_params.getlist('expand')
-
-        if len(raw_expand) == 1:
-            return raw_expand[0].split(',')
-
-        return raw_expand
 
     def to_representation(self, obj):
         output = serializers.Serializer.to_representation(self, obj)
