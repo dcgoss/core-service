@@ -31,14 +31,21 @@ ALLOWED_HOSTS = [os.getenv('DJANGO_HOST', '*')]
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.postgres',
-    'rest_framework',
-    'api.apps.ApiConfig',
-    'organisms',
-    'genes',
+    'django.contrib.staticfiles',
 ]
+
+THIRD_PARTY_APPS = [
+    'rest_framework',
+]
+
+LOCAL_APPS = [
+    'api.apps.ApiConfig',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
@@ -46,7 +53,13 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'api.auth.CognomaAuthentication',
-    )
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        # JSON as primary renderer for API functionality
+        'rest_framework.renderers.JSONRenderer',
+        # Support HTML / web browsable renderer for interacting with API
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
 }
 
 MIDDLEWARE_CLASSES = [
@@ -103,3 +116,13 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+
+STATIC_URL = '/static/'
+
+# Extra static assets that aren't tied to an app
+STATICFILES_DIRS = [
+]
