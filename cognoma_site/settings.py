@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +26,7 @@ SECRET_KEY = 'x!w(6=d6#)yl0ne8yhv#2+*+_nk7vf0#peh4hehg$&83fp^u01'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
+TESTING_MODE = 'test' in sys.argv
 
 ALLOWED_HOSTS = [os.getenv('DJANGO_HOST', '*')]
 
