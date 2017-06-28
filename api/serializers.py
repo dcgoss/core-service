@@ -131,7 +131,9 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
 
             # TODO: create a task def before creating the task?
             task = {
-                'task_def': 'classifier-search',
+                'task_def': {
+                    'name': 'classifier-search'
+                },
                 # There is a unique constraint setup in the task-service database on the unique field of a task.
                 # In core-service testing, classifiers are created and then destroyed in the test database.
                 # However, the task-service being used during testing has its own independent database that isn't
