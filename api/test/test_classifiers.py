@@ -113,7 +113,7 @@ class ClassifierTests(APITestCase):
         self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
         self.assertEqual(update_response.data['results'], results)
 
-    ## TODO: test task cannot be updated / handling the task object on update
+    # TODO: test task cannot be updated / handling the task object on update
 
     def test_must_be_logged_in(self):
         client = APIClient()

@@ -6,7 +6,7 @@ from expander import ExpanderSerializerMixin
 from drf_dynamic_fields import DynamicFieldsMixin
 from django.conf import settings
 
-from api.models import User, Classifier, Disease, Sample, Mutation
+from api.models import User, Classifier, Disease, Sample, Mutation, Gene
 from api.services.task import TaskServiceClient
 
 class UserSerializer(DynamicFieldsMixin, serializers.Serializer):
