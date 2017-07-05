@@ -119,10 +119,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+TEST_RUNNER = 'cognoma_site.test_runner.TemporaryMediaTestSuiteRunner'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-
+MEDIA_ROOT = 'media_files'
 STATIC_URL = '/static/'
 
 # Extra static assets that aren't tied to an app

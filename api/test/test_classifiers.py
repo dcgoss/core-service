@@ -1,10 +1,11 @@
+import os
 from unittest.mock import patch
 
 from rest_framework.test import APITestCase, APIClient
 
 from django.conf import settings
 
-from api.models import Disease, Gene
+from api.models import Disease, Gene, Classifier
 
 
 class ClassifierTests(APITestCase):
@@ -249,3 +250,32 @@ class ClassifierTests(APITestCase):
         self.assertTrue(isinstance(list_response.data['results'][1]['genes'][1], dict))
         self.assertTrue(isinstance(list_response.data['results'][1]['diseases'][0], dict))
         self.assertTrue(isinstance(list_response.data['results'][1]['diseases'][1], dict))
+
+    def test_upload_notebook_from_user(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        with open(os.path.join(settings.BASE_DIR, 'api/test/fixtures/test_notebook.ipynb'), mode='rb') as notebook_file:
+            path = '/classifiers/{id}/upload/'.format(id=1)
+            upload_response = client.post(path,
+                                          data={'notebook_file': notebook_file},
+                                          format='multipart')
+        self.assertEqual(upload_response.status_code, 401)
+
+    def test_upload_notebook_from_internal_service(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        classifier_create_response = client.post('/classifiers', self.classifier_post_data, format='json')
+        self.assertEqual(classifier_create_response.status_code, 201)
+        classifier_id = classifier_create_response.data['id']
+
+        client.credentials(HTTP_AUTHORIZATION=self.service_token)
+        with open(os.path.join(settings.BASE_DIR, 'api/test/fixtures/test_notebook.ipynb'), mode='rb') as notebook_file:
+            path = '/classifiers/{id}/upload/'.format(id=classifier_id)
+            upload_response = client.post(path,
+                                          data={'notebook_file': notebook_file},
+                                          format='multipart')
+        self.assertEqual(upload_response.status_code, 201)
+        classifier = Classifier.objects.get(id=classifier_id)
+        self.assertIsNotNone(classifier.notebook_file.name)
