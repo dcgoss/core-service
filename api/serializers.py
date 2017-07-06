@@ -96,6 +96,7 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
     user = serializers.PrimaryKeyRelatedField(required=False, queryset=User.objects.all())
     task_id = serializers.IntegerField(read_only=True)
     results = serializers.JSONField(required=False, allow_null=True)
+    notebook_file = serializers.FileField(required=False, allow_empty_file=False, allow_null=True)
     created_at = serializers.DateTimeField(read_only=True, format='iso-8601')
     updated_at = serializers.DateTimeField(read_only=True, format='iso-8601')
 
@@ -154,9 +155,16 @@ class ClassifierSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializ
         return classifier
 
     def update(self, instance, validated_data):
-        instance.genes = validated_data.get('genes', instance.genes)
-        instance.diseases = validated_data.get('diseases', instance.diseases)
+        genes = validated_data.get('genes', None)
+        diseases = validated_data.get('diseases', None)
+
+        if genes is not None:
+            instance.genes = genes
+        if diseases is not None:
+            instance.diseases = diseases
         instance.results = validated_data.get('results', instance.results)
+        instance.notebook_file = validated_data.get('notebook_file', instance.notebook_file)
+
         instance.save()
         return instance
 
