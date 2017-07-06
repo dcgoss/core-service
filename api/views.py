@@ -28,7 +28,7 @@ class ClassifierListCreate(generics.ListCreateAPIView):
     ordering_fields = ('user', 'created_at', 'updated_at')
     ordering = ('created_at',)
 
-class ClassifierRetrieveUpdate(generics.RetrieveUpdateAPIView):
+class RetrieveClassifier(generics.RetrieveAPIView):
     permission_classes = (ClassifierPermission,)
     queryset = Classifier.objects.all()
     serializer_class = serializers.ClassifierSerializer

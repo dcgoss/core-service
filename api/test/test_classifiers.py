@@ -109,11 +109,9 @@ class ClassifierTests(APITestCase):
 
         update_response = client.put('/classifiers/' + str(classifier['id']), classifier, format='json')
 
-        self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
-        self.assertEqual(update_response.data['results'], results)
-
-    # TODO: test task cannot be updated / handling the task object on update
+        self.assertEqual(update_response.status_code, 405)
+        # self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
+        # self.assertEqual(update_response.data['results'], results)
 
     def test_must_be_logged_in(self):
         client = APIClient()
@@ -151,7 +149,7 @@ class ClassifierTests(APITestCase):
 
         update_response = client.put('/classifiers/' + str(classifier['id']), classifier, format='json')
 
-        self.assertEqual(update_response.status_code, 403)
+        self.assertEqual(update_response.status_code, 405)
 
     def test_update_from_internal_service(self):
         client = APIClient()
@@ -172,9 +170,9 @@ class ClassifierTests(APITestCase):
 
         update_response = client.put('/classifiers/' + str(classifier['id']), classifier, format='json')
 
-        self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
-        self.assertEqual(update_response.data['results'], results)
+        self.assertEqual(update_response.status_code, 405)
+        # self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
+        # self.assertEqual(update_response.data['results'], results)
 
     def test_list_classifiers(self):
         client = APIClient()
