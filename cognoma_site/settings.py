@@ -41,6 +41,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'django_ses'
 ]
 
 LOCAL_APPS = [
@@ -129,3 +130,7 @@ STATIC_URL = '/static/'
 # Extra static assets that aren't tied to an app
 STATICFILES_DIRS = [
 ]
+
+# django-ses
+EMAIL_BACKEND = 'django_ses.SESBackend'
+FROM_EMAIL = 'noreply@cognoma.org'

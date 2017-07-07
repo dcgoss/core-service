@@ -1,9 +1,10 @@
+from django.core.mail import send_mail
+from django.conf import settings
 import django_filters
 from rest_framework import filters, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound
-from rest_framework.parsers import MultiPartParser
 
 from api.models import User, Classifier, Disease, Sample, Mutation, Gene
 from api import serializers
@@ -49,6 +50,14 @@ class UploadCompletedNotebookToClassifier(APIView):
         serializer = serializers.ClassifierSerializer(classifier, data={'notebook_file': request.FILES['notebook_file']}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        email_message = 'Cognoma has completed processing your classifier. ' \
+                        'Visit {notebook_link} to download your notebook.'.format(notebook_link=classifier.notebook_file.url)
+
+        send_mail(subject='Classifier Processing Complete',
+                  message=email_message,
+                  from_email=settings.FROM_EMAIL,
+                  recipient_list=[classifier.user.email])
 
         return Response(data='Notebook uploaded successfully.', status=201)
 
