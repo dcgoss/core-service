@@ -7,4 +7,4 @@ class TaskServiceClient(BaseServiceClient):
                             json=task)
 
     def get(self, task_id):
-      return self.request('get', '/tasks/' + str(task_id))
+        return self.request('get', '/tasks/' + str(task_id))

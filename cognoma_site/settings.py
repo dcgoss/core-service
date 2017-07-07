@@ -127,15 +127,20 @@ TEST_RUNNER = 'cognoma_site.test_runner.TemporaryMediaTestSuiteRunner'
 STATICFILES_DIRS = [
 ]
 
+# AWS
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
 # django-ses
 EMAIL_BACKEND = 'django_ses.SESBackend'
 FROM_EMAIL = 'noreply@cognoma.org'
+AWS_SES_RETURN_PATH = os.getenv('AWS_SES_RETURN_PATH')
 
 # django-storages
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_CUSTOM_DOMAIN = '{bucket_name}.s3.amazonaws.com'.format(bucket_name=AWS_STORAGE_BUCKET_NAME)
 
-if DEBUG:
+if DEBUG or TESTING_MODE:
     MEDIA_ROOT = 'files/media'
     STATIC_ROOT = 'files/static'
     STATIC_URL = '/static/'

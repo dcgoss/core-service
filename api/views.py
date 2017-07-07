@@ -53,11 +53,11 @@ class UploadCompletedNotebookToClassifier(APIView):
 
         email_message = 'Cognoma has completed processing your classifier. ' \
                         'Visit {notebook_link} to download your notebook.'.format(notebook_link=classifier.notebook_file.url)
-
-        send_mail(subject='Classifier Processing Complete',
+        send_mail(subject='Cognoma Classifier Processing Complete',
                   message=email_message,
                   from_email=settings.FROM_EMAIL,
-                  recipient_list=[classifier.user.email])
+                  recipient_list=[classifier.user.email],
+                  fail_silently=False)
 
         return Response(data='Notebook uploaded successfully.', status=201)
 
