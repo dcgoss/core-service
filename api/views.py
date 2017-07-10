@@ -58,7 +58,6 @@ class UploadCompletedNotebookToClassifier(APIView):
                   from_email=settings.FROM_EMAIL,
                   recipient_list=[classifier.user.email],
                   fail_silently=False)
-
         return Response(data='Notebook uploaded successfully.', status=201)
 
 # User
