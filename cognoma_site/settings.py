@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # The warning below is usually correct, but we do not use this secret key in this project
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'x!w(6=d6#)yl0ne8yhv#2+*+_nk7vf0#peh4hehg$&83fp^u01'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'x!w(6=d6#)yl0ne8yhv#2+*+_nk7vf0#peh4hehg$&83fp^u01')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
@@ -41,6 +41,8 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'django_ses',
+    'storages',
 ]
 
 LOCAL_APPS = [
@@ -121,11 +123,34 @@ USE_TZ = True
 
 TEST_RUNNER = 'cognoma_site.test_runner.TemporaryMediaTestSuiteRunner'
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
-MEDIA_ROOT = 'media_files'
-STATIC_URL = '/static/'
-
 # Extra static assets that aren't tied to an app
 STATICFILES_DIRS = [
 ]
+
+# AWS
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+# django-ses
+EMAIL_BACKEND = 'django_ses.SESBackend'
+FROM_EMAIL = 'noreply@cognoma.org'
+AWS_SES_RETURN_PATH = os.getenv('AWS_SES_RETURN_PATH')
+
+# django-storages
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_CUSTOM_DOMAIN = '{bucket_name}.s3.amazonaws.com'.format(bucket_name=AWS_STORAGE_BUCKET_NAME)
+
+if DEBUG or TESTING_MODE:
+    MEDIA_ROOT = 'files/media'
+    STATIC_ROOT = 'files/static'
+    STATIC_URL = '/static/'
+else:
+    STATIC_URL = "https://{domain}/".format(domain=AWS_S3_CUSTOM_DOMAIN)
+    STATICFILES_LOCATION = 'static'
+    STATICFILES_STORAGE = 'cognoma_site.custom_storages.StaticStorage'
+    STATIC_URL = 'https://{domain}/{location}/'.format(domain=AWS_S3_CUSTOM_DOMAIN, location=STATICFILES_LOCATION)
+
+    MEDIAFILES_LOCATION = 'media'
+    MEDIA_URL = 'https://{domain}/{location}/'.format(domain=AWS_S3_CUSTOM_DOMAIN, location=MEDIAFILES_LOCATION)
+    DEFAULT_FILE_STORAGE = 'cognoma_site.custom_storages.MediaStorage'
+

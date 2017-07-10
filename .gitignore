@@ -95,7 +95,9 @@ envs/
 
 # Cognoma data directory
 data/
-media_files
+
+# Static/Media files
+files
 
 # PyCharm IDE 
 .idea
