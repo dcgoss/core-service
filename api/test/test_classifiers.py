@@ -15,6 +15,7 @@ class ClassifierTests(APITestCase):
                        'user',
                        'task_id',
                        'results',
+                       'notebook_file',
                        'created_at',
                        'updated_at']
 
