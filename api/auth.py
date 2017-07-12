@@ -63,34 +63,30 @@ class UserUpdateSelfOnly(permissions.BasePermission):
 
         return False
 
-class ClassifierPermission(permissions.BasePermission):
+class IsAuthenticatedOrReadOnlyPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
 
         if not request.user:
             raise exceptions.NotAuthenticated()
+        else:
+            return True
 
-        return True
-
+class ClassifierRetrievePermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        if not request.user:
+            return False
+        elif request.auth['type'] == 'JWT' and request.auth['service'] == 'core':
             return True
+        else:
+            return obj.user == request.user
 
+class MLWorkerOnlyPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
         if not request.user:
             raise exceptions.NotAuthenticated()
-
-        if request.auth['type'] == 'JWT' or request.user.id == obj.user.id:
-            return True
-
-        return False
-
-class TaskServicePermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if request.auth['type'] == 'JWT' and request.auth['service'] == 'core':
+        elif request.auth['type'] == 'JWT' and request.auth['service'] == 'core':
             return True
         else:
             raise exceptions.NotAuthenticated()
