@@ -7,16 +7,28 @@ from django.conf import settings
 
 from api.models import Disease, Gene, Classifier
 
+classifier_keys = ['id',
+                   'title',
+                   'name',
+                   'description',
+                   'genes',
+                   'diseases',
+                   'user',
+                   'notebook_file',
+                   'created_at',
+                   'updated_at',
+                   'status',
+                   'worker_id',
+                   'priority',
+                   'timeout',
+                   'attempts',
+                   'max_attempts',
+                   'locked_at',
+                   'started_at',
+                   'completed_at',
+                   'failed_at']
 
 class ClassifierTests(APITestCase):
-    classifier_keys = ['id',
-                       'genes',
-                       'diseases',
-                       'user',
-                       'task_id',
-                       'results',
-                       'created_at',
-                       'updated_at']
 
     def setUp(self):
         client = APIClient()
@@ -60,26 +72,7 @@ class ClassifierTests(APITestCase):
         response = client.post('/classifiers', self.classifier_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(list(response.data.keys()), self.classifier_keys)
-
-    @patch('api.services.task.TaskServiceClient.create')
-    def test_create_classifier_with_task(self, create_task_mock):
-        create_task_mock.return_value = {
-            'id': 123,
-            'data': {
-                'foo': 'bar'
-            }
-        }
-
-        client = APIClient()
-
-        client.credentials(HTTP_AUTHORIZATION=self.token)
-
-        #settings.CREATE_TASKS = True
-
-        response = client.post('/classifiers', self.classifier_post_data, format='json')
-
-        #settings.CREATE_TASKS = False
+        self.assertEqual(list(response.data.keys()), classifier_keys)
 
     def test_create_from_internal_service(self):
         client = APIClient()
@@ -92,7 +85,7 @@ class ClassifierTests(APITestCase):
         response = client.post('/classifiers', classifier_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(list(response.data.keys()), self.classifier_keys)
+        self.assertEqual(list(response.data.keys()), classifier_keys)
 
     def test_update_classifier(self):
         client = APIClient()
@@ -111,7 +104,7 @@ class ClassifierTests(APITestCase):
         update_response = client.put('/classifiers/' + str(classifier['id']), classifier, format='json')
 
         self.assertEqual(update_response.status_code, 405)
-        # self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
+        # self.assertEqual(list(update_response.data.keys()), classifier_keys)
         # self.assertEqual(update_response.data['results'], results)
 
     def test_must_be_logged_in(self):
@@ -124,14 +117,20 @@ class ClassifierTests(APITestCase):
 
         create2_response = client.post('/classifiers', self.classifier_post_data, format='json')
 
-        classifier = create2_response.data
+        self.assertEqual(create2_response.status_code, 201)
 
-        client = APIClient() # clear token
+        classifier = create2_response.data
 
         update_response = client.put('/classifiers/' + str(classifier['id']), {}, format='json')
 
-        self.assertEqual(update_response.status_code, 401)
+        self.assertEqual(update_response.status_code, 405)
 
+    def test_no_classifier_update_allowed(self):
+        client = APIClient()
+
+        update_response = client.put('/classifiers/1', {}, format='json')
+
+        self.assertEqual(update_response.status_code, 405)
 
     def test_cannot_update_other_user_classifier(self):
         client = APIClient()
@@ -172,7 +171,7 @@ class ClassifierTests(APITestCase):
         update_response = client.put('/classifiers/' + str(classifier['id']), classifier, format='json')
 
         self.assertEqual(update_response.status_code, 405)
-        # self.assertEqual(list(update_response.data.keys()), self.classifier_keys)
+        # self.assertEqual(list(update_response.data.keys()), classifier_keys)
         # self.assertEqual(update_response.data['results'], results)
 
     def test_list_classifiers(self):
@@ -195,23 +194,30 @@ class ClassifierTests(APITestCase):
                                                            'previous',
                                                            'results'])
         self.assertEqual(len(list_response.data['results']), 2)
-        self.assertEqual(list(list_response.data['results'][0].keys()), self.classifier_keys)
-        self.assertEqual(list(list_response.data['results'][1].keys()), self.classifier_keys)
+        self.assertEqual(list(list_response.data['results'][0].keys()), classifier_keys)
+        self.assertEqual(list(list_response.data['results'][1].keys()), classifier_keys)
 
     def test_get_classifier(self):
         client = APIClient()
+
         client.credentials(HTTP_AUTHORIZATION=self.token)
-
         create_classifier_response = client.post('/classifiers', self.classifier_post_data, format='json')
-
         self.assertEqual(create_classifier_response.status_code, 201)
 
-        client = APIClient() # clear token
+        get_classifier_authenticated_response = client.get('/classifiers/' + str(create_classifier_response.data['id']))
+        self.assertEqual(get_classifier_authenticated_response.status_code, 200)
+        self.assertEqual(list(get_classifier_authenticated_response.data.keys()), classifier_keys)
 
-        get_classifier_response = client.get('/classifiers/' + str(create_classifier_response.data['id']))
+        client.credentials(HTTP_AUTHORIZATION=self.service_token)
+        get_classifier_jwt_auth_response = client.get('/classifiers/' + str(create_classifier_response.data['id']))
+        self.assertEqual(get_classifier_jwt_auth_response.status_code, 200)
+        self.assertEqual(list(get_classifier_jwt_auth_response.data.keys()), classifier_keys)
 
-        self.assertEqual(get_classifier_response.status_code, 200)
-        self.assertEqual(list(get_classifier_response.data.keys()), self.classifier_keys)
+        # clear token
+        client = APIClient()
+        get_classifier_unauthenticated_response = client.get('/classifiers/' + str(create_classifier_response.data['id']))
+        # a user's classifiers are private to them
+        self.assertEqual(get_classifier_unauthenticated_response.status_code, 401)
 
     def test_expansion(self):
         client = APIClient()
@@ -233,8 +239,8 @@ class ClassifierTests(APITestCase):
                                                            'previous',
                                                            'results'])
         self.assertEqual(len(list_response.data['results']), 2)
-        self.assertEqual(list(list_response.data['results'][0].keys()), self.classifier_keys)
-        self.assertEqual(list(list_response.data['results'][1].keys()), self.classifier_keys)
+        self.assertEqual(list(list_response.data['results'][0].keys()), classifier_keys)
+        self.assertEqual(list(list_response.data['results'][1].keys()), classifier_keys)
 
         self.assertTrue(isinstance(list_response.data['results'][0]['user'], dict))
         self.assertTrue(isinstance(list_response.data['results'][1]['user'], dict))
@@ -248,32 +254,3 @@ class ClassifierTests(APITestCase):
         self.assertTrue(isinstance(list_response.data['results'][1]['genes'][1], dict))
         self.assertTrue(isinstance(list_response.data['results'][1]['diseases'][0], dict))
         self.assertTrue(isinstance(list_response.data['results'][1]['diseases'][1], dict))
-
-    def test_upload_notebook_from_user(self):
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=self.token)
-
-        with open(os.path.join(settings.BASE_DIR, 'api/test/fixtures/test_notebook.ipynb'), mode='rb') as notebook_file:
-            path = '/classifiers/{id}/upload/'.format(id=1)
-            upload_response = client.post(path,
-                                          data={'notebook_file': notebook_file},
-                                          format='multipart')
-        self.assertEqual(upload_response.status_code, 401)
-
-    def test_upload_notebook_from_internal_service(self):
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=self.token)
-
-        classifier_create_response = client.post('/classifiers', self.classifier_post_data, format='json')
-        self.assertEqual(classifier_create_response.status_code, 201)
-        classifier_id = classifier_create_response.data['id']
-
-        client.credentials(HTTP_AUTHORIZATION=self.service_token)
-        with open(os.path.join(settings.BASE_DIR, 'api/test/fixtures/test_notebook.ipynb'), mode='rb') as notebook_file:
-            path = '/classifiers/{id}/upload/'.format(id=classifier_id)
-            upload_response = client.post(path,
-                                          data={'notebook_file': notebook_file},
-                                          format='multipart')
-        self.assertEqual(upload_response.status_code, 201)
-        classifier = Classifier.objects.get(id=classifier_id)
-        self.assertIsNotNone(classifier.notebook_file.name)
