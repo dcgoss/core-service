@@ -133,6 +133,15 @@ class FailClassifierTask(APIView):
         classifier.is_valid(raise_exception=True)
         classifier.save()
 
+        if classifier.attempts >= classifier.max_attempts:
+            email_message = 'An error has occurred and your classifier could not be processed.\n' + \
+                            'Support is available at https://github.com/cognoma.'
+            send_mail(subject='Cognoma Classifier {id} Processing Failure'.format(id=classifier.id),
+                      message=email_message,
+                      from_email=settings.FROM_EMAIL,
+                      recipient_list=[classifier.user.email],
+                      fail_silently=True)
+
         return Response(data=classifier.data, status=200)
 
 # User
