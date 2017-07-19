@@ -84,9 +84,6 @@ class ClassifierRetrievePermission(permissions.BasePermission):
 
 class MLWorkerOnlyPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user:
+        if not request.auth:
             raise exceptions.NotAuthenticated()
-        elif request.auth['type'] == 'JWT' and request.auth['service'] == 'core':
-            return True
-        else:
-            raise exceptions.NotAuthenticated()
+        return request.auth['type'] == 'JWT' and request.auth['service'] == 'core'

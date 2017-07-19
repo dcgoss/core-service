@@ -56,14 +56,16 @@ class UploadCompletedNotebookToClassifier(APIView):
                                           }, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        email_message = 'Cognoma has completed processing your classifier. ' \
-                        'Visit {notebook_link} to download your notebook.'.format(notebook_link=classifier.notebook_file.url)
-        send_mail(subject='Cognoma Classifier Processing Complete',
+        download_link = classifier.notebook_file.url
+        nbviewer_link = 'https://nbviewer.jupyter.org/urls/' + download_link.replace('https://', '')
+        email_message = 'Cognoma has completed processing your classifier.\n' + \
+                        'Visit {notebook_link} to download your notebook.\n'.format(notebook_link=download_link) + \
+                        'Visit {nbviewer_link} to view your notebook online.'.format(nbviewer_link=nbviewer_link)
+        send_mail(subject='Cognoma Classifier {id} Processing Complete'.format(id=classifier.id),
                   message=email_message,
                   from_email=settings.FROM_EMAIL,
                   recipient_list=[classifier.user.email],
-                  fail_silently=False)
+                  fail_silently=True)
         return Response(serializer.data, status=201)
 
 class PullClassifierTaskQueue(APIView):
