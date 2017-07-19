@@ -8,10 +8,6 @@ from django.conf import settings
 
 from api.models import User, Classifier, Disease, Sample, Mutation, Gene, PRIORITY_CHOICES, DEFAULT_CLASSIFIER_TITLE
 
-class UniqueTaskConflict(exceptions.APIException):
-    status_code = 409
-    default_detail = 'Task `unique` field conflict'
-
 class UserSerializer(DynamicFieldsMixin, serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(required=False, allow_blank=True, max_length=255)
