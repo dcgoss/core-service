@@ -124,14 +124,14 @@ class FailClassifierTask(APIView):
 
     def post(self, request, id):
         try:
-            task = Classifier.objects.get(id=id)
+            classifier = Classifier.objects.get(id=id)
         except Classifier.DoesNotExist:
             raise NotFound('Task not found')
-        classifier = ClassifierSerializer(task, data={
+        serializer = ClassifierSerializer(classifier, data={
             'failed_at': datetime.datetime.utcnow()
         }, partial=True)
-        classifier.is_valid(raise_exception=True)
-        classifier.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
         if classifier.attempts >= classifier.max_attempts:
             email_message = 'An error has occurred and your classifier could not be processed.\n' + \
@@ -142,7 +142,7 @@ class FailClassifierTask(APIView):
                       recipient_list=[classifier.user.email],
                       fail_silently=True)
 
-        return Response(data=classifier.data, status=200)
+        return Response(data=serializer.data, status=200)
 
 # User
 
