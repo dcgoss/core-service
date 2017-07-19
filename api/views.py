@@ -6,8 +6,9 @@ from rest_framework import filters, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.pagination import LimitOffsetPagination
 
-from api.auth import UserUpdateSelfOnly, IsAuthenticatedOrReadOnlyPermission, ClassifierRetrievePermission, MLWorkerOnlyPermission
+from api.auth import UserAccessSelfOnly, ClassifierCreatePermission, ClassifierRetrievePermission, MLWorkerOnlyPermission
 from api.models import User, Classifier, Disease, Sample, Mutation, Gene
 from api.serializers import ClassifierSerializer, UserSerializer, GeneSerializer, DiseaseSerializer, MutationSerializer, SampleSerializer
 from api import queue
@@ -25,14 +26,9 @@ class ClassifierFilter(filters.FilterSet):
         model = Classifier
         fields = ['user', 'created_at', 'updated_at']
 
-class ClassifierListCreate(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnlyPermission,)
-    queryset = Classifier.objects.all()
+class ClassifierCreate(generics.CreateAPIView):
+    permission_classes = (ClassifierCreatePermission,)
     serializer_class = ClassifierSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_class = ClassifierFilter
-    ordering_fields = ('user', 'created_at', 'updated_at')
-    ordering = ('created_at',)
 
 class RetrieveClassifier(generics.RetrieveAPIView):
     permission_classes = (ClassifierRetrievePermission,)
@@ -152,16 +148,12 @@ class UserFilter(filters.FilterSet):
         model = User
         fields = ['email', 'created_at', 'updated_at']
 
-class UserListCreate(generics.ListCreateAPIView):
-    queryset = User.objects.all()
+class UserCreate(generics.CreateAPIView):
+    permission_classes = []
     serializer_class = UserSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_class = UserFilter
-    ordering_fields = ('created_at', 'updated_at')
-    ordering = ('created_at',)
 
 class UserRetrieveUpdate(generics.RetrieveUpdateAPIView):
-    permission_classes = (UserUpdateSelfOnly,)
+    permission_classes = (UserAccessSelfOnly,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
@@ -183,11 +175,16 @@ class GeneFilter(filters.FilterSet):
         model = Gene
         fields = ['entrez_gene_id', 'symbol', 'chromosome', 'gene_type']
 
+class GenePagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 10
+
 class GeneList(generics.ListAPIView):
     queryset = Gene.objects.all()
     serializer_class = GeneSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = GeneFilter
+    pagination_class = GenePagination
     ordering_fields = ('entrez_gene_id', 'symbol', 'chromosome')
     ordering = ('entrez_gene_id',)
 

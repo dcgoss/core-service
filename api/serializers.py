@@ -43,17 +43,6 @@ class UserSerializer(DynamicFieldsMixin, serializers.Serializer):
         else:
             auth_type = None
 
-        if (self.context['request'].method != 'POST' and
-            auth_type != 'JWT' and
-            (not self.context['request'].user or
-             (auth_type != 'Bearer' and
-              self.context['request'].user.id != obj.id))):
-           del output['email']
-
-        # Only return secure random slug on create
-        if self.context['request'].method == 'POST':
-            output['random_slugs'] = obj.random_slugs
-
         return output
 
 class MutationSerializer(DynamicFieldsMixin, ExpanderSerializerMixin, serializers.Serializer):
