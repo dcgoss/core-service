@@ -15,8 +15,8 @@ urlpatterns = [
     url(r'^users/(?P<id>[0-9]+)$', views.UserRetrieveUpdate.as_view()),
     url(r'^users/(?P<random_slug>.+)$', views.UserRetrieveFromSlug.as_view()),
 
-    url(r'^genes/?$', views.GeneList.as_view()),
-    url(r'^genes/(?P<entrez_gene_id>[0-9]+)$', views.GeneRetrieve.as_view()),
+    # url(r'^genes/?$', views.GeneList.as_view()),
+    # url(r'^genes/(?P<entrez_gene_id>[0-9]+)$', views.GeneRetrieve.as_view()),
 
     url(r'^diseases/?$', views.DiseaseList.as_view()),
     url(r'^diseases/(?P<acronym>[a-zA-Z]+)$', views.DiseaseRetrieve.as_view()),
