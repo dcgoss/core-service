@@ -5,7 +5,7 @@ coreapi==2.3.1
 coreschema==0.0.4
 cryptography==1.5.2
 Django==1.9.8
-django-filter==0.14.0
+django-filter==1.0.4
 django-fixtureless==1.4.3.3
 django-genes==0.3
 django-haystack==2.5.0

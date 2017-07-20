@@ -75,7 +75,6 @@ SWAGGER_SETTINGS = {
             'name': 'Authorization'
         }
     },
-    'JSON_EDITOR': True
 }
 
 MIDDLEWARE_CLASSES = [
